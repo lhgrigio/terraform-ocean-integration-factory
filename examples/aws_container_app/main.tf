@@ -7,7 +7,7 @@ locals {
 }
 
 module "port_ocean_ecs_lb" {
-  source                  = "../../modules/aws_helpers/ecs_lb"
+  source                  = "port-labs/integration-factory/ocean//modules/aws_helpers/ecs_lb"
   count                   = var.allow_incoming_requests ? 1 : 0
   vpc_id                  = var.vpc_id
   subnets                 = var.subnets
@@ -16,7 +16,7 @@ module "port_ocean_ecs_lb" {
 
 
 module "port_ocean_ecs" {
-  source = "../../modules/aws_helpers/ecs_service"
+  source = "port-labs/integration-factory/ocean//modules/aws_helpers/ecs_service"
 
   subnets                                     = var.subnets
   cluster_name                                = var.cluster_name
@@ -27,7 +27,8 @@ module "port_ocean_ecs" {
   additional_task_execution_policy_statements = var.additional_task_execution_policy_statements
   additional_task_policy_statements           = var.additional_task_policy_statements
   assign_public_ip                            = var.assign_public_ip
-  cpu                                         = var.cpu
+  cpu                                         = var.cpu       
+  memory                                      = var.memory
 
 
   lb_target_group_arn         = var.allow_incoming_requests ? module.port_ocean_ecs_lb[0].target_group_arn : ""
@@ -46,6 +47,7 @@ module "port_ocean_ecs" {
     type       = var.integration.type
     identifier = var.integration.identifier
     cpu        = var.cpu
+    memory        = var.memory
     config = var.allow_incoming_requests ? merge({
       app_host = module.port_ocean_ecs_lb[0].dns_name
     }, var.integration.config) : var.integration.config
@@ -53,14 +55,14 @@ module "port_ocean_ecs" {
 }
 
 module "api_gateway" {
-  source = "../../modules/aws_helpers/api_gateway"
+  source = "port-labs/integration-factory/ocean//modules/aws_helpers/api_gateway"
   count  = var.allow_incoming_requests ? 1 : 0
 
   webhook_url = var.allow_incoming_requests ? module.port_ocean_ecs_lb[0].dns_name : ""
 }
 
 module "events" {
-  source = "../../modules/aws_helpers/default_events"
+  source = "port-labs/integration-factory/ocean//modules/aws_helpers/default_events"
   count  = var.allow_incoming_requests ? 1 : 0
 
   api_key_param = var.integration.config.live_events_api_key
