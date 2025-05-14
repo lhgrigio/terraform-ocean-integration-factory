@@ -27,6 +27,7 @@ module "port_ocean_ecs" {
   additional_task_execution_policy_statements = var.additional_task_execution_policy_statements
   additional_task_policy_statements           = var.additional_task_policy_statements
   assign_public_ip                            = var.assign_public_ip
+  cpu                                         = var.cpu
 
 
   lb_target_group_arn         = var.allow_incoming_requests ? module.port_ocean_ecs_lb[0].target_group_arn : ""
@@ -44,6 +45,7 @@ module "port_ocean_ecs" {
   integration = {
     type       = var.integration.type
     identifier = var.integration.identifier
+    cpu = var.cpu
     config = var.allow_incoming_requests ? merge({
       app_host = module.port_ocean_ecs_lb[0].dns_name
     }, var.integration.config) : var.integration.config
